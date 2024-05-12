@@ -1,5 +1,5 @@
 # PatchAD
-This is the implementation of *PatchAD: A Lightweight Patch-based MLP-Mixer for Time Series Anomaly Detection*
+This is the implementation of *PatchAD: A Lightweight Patch-based MLP-Mixer for Time Series Anomaly Detection*.
 
 You can download the paper from [arivx](https://arxiv.org/abs/2401.09793).
 
@@ -10,7 +10,7 @@ Anomaly detection in time series analysis is a pivotal task, yet it poses the ch
 ![Architecture](./paper_img/fw2.png)
 
 ### Overall Performance \& Model Size
-<div style="display: flex;">
-    <img src="./paper_img/pfrm.png" width="600">
-    <img src="./paper_img/mdlsz.png" width="300">
+<div style="display: flex; flex-wrap: nowrap;">
+  <img src="./paper_img/pfrm.png" alt="Overall Performance" style="max-width: 600px; margin-right: 10px;">
+  <img src="./paper_img/mdlsz.png" alt="Model Size" style="max-width: 300px;">
 </div>
