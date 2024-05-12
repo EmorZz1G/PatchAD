@@ -23,10 +23,27 @@ def get_activation(activ):
         return nn.GELU()
     elif activ == "leaky_relu":
         return nn.LeakyReLU()
+    elif activ == 'tanh':
+        return nn.Tanh()
+    elif activ == 'sigmoid':
+        return nn.Sigmoid()
     elif activ == "none":
         return nn.Identity()
     else:
         raise ValueError(f"activation:{activ}")
+
+def get_norm(norm, c):
+    if norm == 'bn':
+        norm_class = nn.BatchNorm2d(c)
+    elif norm == 'in':
+        norm_class = nn.InstanceNorm2d(c)
+    elif norm == 'ln':
+        norm_class = nn.LayerNorm(c)
+    else:
+        norm_class = nn.Identity()
+
+    return norm_class
+
 
 class MLPBlock(nn.Module):
     def __init__(
@@ -38,13 +55,17 @@ class MLPBlock(nn.Module):
         activ="gelu",
         drop: float = 0.00,
         jump_conn="proj",
+        norm='ln'
     ):
         super().__init__()
         self.dim = dim
         self.out_features = out_features
+        norm
         self.net = nn.Sequential(
+            get_norm(norm,in_features),
             nn.Linear(in_features, hid_features),
             get_activation(activ),
+            get_norm(norm,hid_features),
             nn.Linear(hid_features, out_features),
             nn.Dropout(drop),
         )
@@ -94,6 +115,8 @@ class PatchMLP_layer(nn.Module):
             norm_class = nn.BatchNorm2d
         elif norm == 'in':
             norm_class = nn.InstanceNorm2d
+        elif norm == 'ln':
+            norm_class = nn.LayerNorm
         else:
             norm_class = nn.Identity
         self.norm1 = norm_class(in_chn)
@@ -215,9 +238,17 @@ class Encoder_Ensemble(nn.Module):
         size_dist_list = []
         num_logi_list = []
         size_logi_list = []
+        T_num_logi_list =[]
+        T_size_logi_list = []
 
         for enc in self.enc_layers:
             x_pach_num_dist, x_patch_size_dist = enc(x_patch_num, x_patch_size)
+
+            x_patch_num = torch.relu(x_patch_num)
+            x_patch_size = torch.relu(x_patch_size)
+
+            T_num_logi_list.append(x_pach_num_dist)
+            T_size_logi_list.append(x_patch_size_dist)
 
             num_logi_list.append(x_pach_num_dist.mean(1))
             size_logi_list.append(x_patch_size_dist.mean(1))
@@ -245,7 +276,7 @@ class Encoder_Ensemble(nn.Module):
         size_dist_list = self.size_mix_layer(size_dist_list)
         
 
-        return num_dist_list, size_dist_list, num_logi_list, size_logi_list
+        return num_dist_list, size_dist_list, num_logi_list, size_logi_list, T_num_logi_list, T_size_logi_list
 
 
 
@@ -284,15 +315,10 @@ class PatchMLPAD(nn.Module):
         self.patch_encoders = nn.ModuleList()
         cont_model = d_model if cont_model is None else cont_model
         cont_model = 30
-        if norm == 'bn':
-            norm_class = nn.BatchNorm1d
-        elif norm == 'in':
-            norm_class = nn.InstanceNorm1d
-        else:
-            norm_class = nn.Identity
+        
 
-        self.patch_num_mixer = nn.Sequential(MLPBlock(2, d_model, d_model//2, d_model, activ='none', drop=dropout, jump_conn='trunc'),nn.Softmax(-1))
-        self.patch_size_mixer = nn.Sequential(MLPBlock(2, d_model, d_model//2, d_model, activ='none', drop=dropout, jump_conn='trunc'),nn.Softmax(-1))
+        self.patch_num_mixer = nn.Sequential(MLPBlock(2, d_model, d_model//2, d_model, activ=activation, drop=dropout, jump_conn='trunc'),nn.Softmax(-1))
+        self.patch_size_mixer = nn.Sequential(MLPBlock(2, d_model, d_model//2, d_model, activ=activation, drop=dropout, jump_conn='trunc'),nn.Softmax(-1))
 
 
         for i, p in enumerate(patch_sizes):
@@ -300,13 +326,28 @@ class PatchMLPAD(nn.Module):
             patch_size = patch_sizes[i]
             patch_num = win_size // patch_size
             enc_layers = [
-                PatchMLP_layer(win_size, 40, channel, int(channel*1.2), int(channel*1), patch_size, int(patch_size*1.2), d_model, norm, activation, dropout, jump_conn='proj')
+                PatchMLP_layer(win_size, 40, channel, int(channel*1.2), int(channel*1.), patch_size, int(patch_size*1.2), d_model, norm, activation, dropout, jump_conn='proj')
                 for i in range(e_layer)
             ]
             enc = Encoder_Ensemble(enc_layers=enc_layers)
             self.patch_encoders.append(enc)
 
-    def forward(self, x, mask=None):
+        self.recons_num = []
+        self.recons_size = []
+        for i, p in enumerate(patch_sizes):
+            patch_size = patch_sizes[i]
+            patch_num = win_size // patch_size
+            self.recons_num.append(nn.Sequential(Rearrange('b c n p -> b c (n p)'), nn.LayerNorm(patch_num*d_model),  nn.Linear(patch_num*d_model, d_model), nn.Sigmoid(), nn.LayerNorm(d_model), nn.Linear(d_model, win_size), Rearrange('b c l -> b l c')))
+
+            self.recons_size.append(nn.Sequential(Rearrange('b c n p -> b c (n p)'), nn.LayerNorm(patch_size*d_model),  nn.Linear(patch_size*d_model, d_model), nn.Sigmoid(), nn.LayerNorm(d_model), nn.Linear(d_model, win_size), Rearrange('b c l -> b l c')))
+
+        self.recons_num = nn.ModuleList(self.recons_num)
+        self.recons_size = nn.ModuleList(self.recons_size)
+
+        self.rec_alpha = nn.Parameter(torch.zeros(patch_size), requires_grad=True)
+        self.rec_alpha.data.fill_(0.5)
+
+    def forward(self, x, mask=None, del_inter=0, del_intra=0):
         B, L, M = x.shape  # Batch win_size channel
         patch_num_distribution_list = []
         patch_size_distribution_list = []
@@ -319,6 +360,7 @@ class PatchMLPAD(nn.Module):
         # Instance Normalization Operation
         x = revin_layer(x, "norm")
 
+        rec_x = None
         # Mutil-scale Patching Operation
         for patch_index, patchsize in enumerate(self.patch_sizes):
             patch_enc = self.patch_encoders[patch_index]
@@ -339,11 +381,15 @@ class PatchMLPAD(nn.Module):
                 patch_size_distribution,
                 logi_patch_num,
                 logi_patch_size,
+                T_num_logi_list,
+                T_size_logi_list
             ) = patch_enc(x_patch_num, x_patch_size, mask)
 
             patch_num_distribution_list.append(patch_num_distribution)
             patch_size_distribution_list.append(patch_size_distribution)
 
+
+            recs = []
             for i in range(len(logi_patch_num)):
                 logi_patch_num1 = logi_patch_num[i]
                 logi_patch_size1 = logi_patch_size[i]
@@ -351,6 +397,38 @@ class PatchMLPAD(nn.Module):
                 patch_size_mx = self.patch_size_mixer(logi_patch_size1)
                 patch_num_mx_list.append(patch_num_mx)
                 patch_size_mx_list.append(patch_size_mx)
+
+
+                # print(len(T_num_logi_list))
+                # print(T_num_logi_list[i].shape)
+                rec1 = self.recons_num[patch_index](T_num_logi_list[i])
+                rec2 = self.recons_size[patch_index](T_size_logi_list[i])
+
+                if del_inter:
+                    rec = rec2
+                elif del_intra:
+                    rec = rec1
+                else:
+                    rec_alpha = self.rec_alpha[patch_index]
+                    rec = rec1 * rec_alpha + rec2 * (1 - rec_alpha)
+                recs.append(rec)
+
+            recs = torch.stack(recs, dim=0).mean(0)
+
+            if not self.training:
+                # self.T1 = torch.stack(T_num_logi_list, dim=0).mean(0)
+                # self.T2 = torch.stack(T_size_logi_list, dim=0).mean(0)
+                self.T1 = T_num_logi_list[-1]
+                self.T2 = T_size_logi_list[-1]
+            
+            if rec_x is None:
+                rec_x = recs
+            else:
+                rec_x = rec_x + recs
+
+        rec_x = rec_x / len(self.patch_sizes)    
+        # rec_x = revin_layer(x, 'denorm')
+
 
 
         patch_num_distribution_list = list(_flatten(patch_num_distribution_list))
@@ -364,6 +442,7 @@ class PatchMLPAD(nn.Module):
                 patch_size_distribution_list,
                 patch_num_mx_list,
                 patch_size_mx_list,
+                rec_x
             )
         else:
             return None

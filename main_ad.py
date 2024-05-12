@@ -4,7 +4,7 @@ import sys
 import torch.optim
 
 sys.path.append("..")
-from data.data_loader import data_name2nc
+from data.data_loader2 import data_name2nc
 import os
 import sys
 
@@ -27,14 +27,15 @@ class Logger(object):
     def flush(self):
         pass
 
+data_pth = r'/share/home/202220143416/time_series_data/dc_detector/'
 
 args = argparse.ArgumentParser()
 args.add_argument("--data_name", required=False, default='MSL', type=str)
-args.add_argument("--data_path", required=False, default='/home/zzj/time_series_data2/DCdetector_dataset/', type=str)
+args.add_argument("--data_path", required=False, default=data_pth, type=str)
 
 args.add_argument("--device", required=False, default='cuda:0', type=str)
 args.add_argument("--ver", required=False, default='', type=str)
-args.add_argument("--win_size", "-ws", required=False, default=90, type=int)
+args.add_argument("--win_size", "-ws", required=False, default=105, type=int)
 args.add_argument("--stride", "-st", required=False, default=1, type=int)
 args.add_argument("--batch_size", "-bs", required=False, default=256, type=int)
 args.add_argument("--epochs", '-ep', required=False, default=5, type=int)
@@ -42,18 +43,21 @@ args.add_argument("--epochs", '-ep', required=False, default=5, type=int)
 args.add_argument('--anormly_ratio','-ar', type=float, default=1)
 args.add_argument('--learning_rate','-lr', type=float, default=0.0001)
 args.add_argument("--patch_sizes",'-ps', required=False, default=[3,5], type=eval)
-args.add_argument("--d_model", required=False, default=40, type=int)
+args.add_argument("--d_model", required=False, default=200, type=int)
 args.add_argument("--e_layer", required=False, default=3, type=int)
 
 args.add_argument("--seed", required=False, default=0, type=int)
 args.add_argument("--save_model", required=False, default=1, type=int)
 args.add_argument("--full_res", required=False, default=1, type=int)
-args.add_argument("--model_save_path", required=False, default=f"/home/zzj/patch_ad_model2/", type=str)
+args.add_argument("--model_save_path", required=False, default=f"/share/home/202220143416//patch_ad_model2/", type=str)
 args.add_argument(
-    "--res_pth", required=False, default=f"/home/zzj/patch_ad_result2/", type=str
+    "--res_pth", required=False, default=f"/share/home/202220143416/patch_ad_result2/", type=str
 )
 args.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
 args.add_argument("--patch_mx", required=False, default=0.3, type=float)
+
+
+args.add_argument("--cont_beta", required=False, default=0.0, type=float)
 
 
 
@@ -88,7 +92,7 @@ import logging
 import os
 import pickle
 from utils2.utils2 import seed_all
-from trainer.patchad_trainer import Solver as Trainer # 
+from trainer.patchad_trainer_v2 import Solver as Trainer # 
 from metrics.metrics import my_combine_all_evaluation_scores
 from torch.backends import cudnn
 cudnn.benchmark = True
