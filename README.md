@@ -21,7 +21,7 @@ Anomaly detection in time series analysis is a pivotal task, yet it poses the ch
 **If you find this repo useful, please cite our paper.**
 > @misc{zhong2024patchad, <br>
 &nbsp;&nbsp;&nbsp;&nbsp;title={PatchAD: A Lightweight Patch-based MLP-Mixer for Time Series Anomaly Detection}, <br>
-#&nbsp;&nbsp;&nbsp;&nbsp;author={anonymous authors}, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;author={anonymous authors}, <br>
 &nbsp;&nbsp;&nbsp;&nbsp;year={2024}, <br>
 &nbsp;&nbsp;&nbsp;&nbsp;eprint={2401.09793}, <br>
 &nbsp;&nbsp;&nbsp;&nbsp;archivePrefix={arXiv}, <br>
