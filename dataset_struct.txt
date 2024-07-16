@@ -1,0 +1,22 @@
+/ABSOLUTE/PATH/OF/DATASET/
+    MSL/
+        MSL_test_label.npy
+        MSL_test.npy
+        MSL_train.npy
+    PSM/
+        test.csv
+        test_label.csv
+        train.csv
+    SMAP/
+        SMAP_test_label.npy
+        SMAP_test.npy
+        SMAP_train.npy
+    SMD/
+        SMD_test_label.npy
+        SMD_test.npy
+        SMD_train.npy
+    SWAT/
+        swat2.csv
+        swat_train2.csv
+    ...
+   
