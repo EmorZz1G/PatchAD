@@ -174,4 +174,5 @@ cython_debug/
 patch_ad_model2/
 patch_ad_result2/
 logs/
+local/
 
