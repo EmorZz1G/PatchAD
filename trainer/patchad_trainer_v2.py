@@ -415,7 +415,7 @@ class Solver(object):
 
 
         if self.mode == 'test':
-            logf = r'/share/home/202220143416/project/SimAD/PatchAD/logs'
+            logf = r'./logs'
             import pandas as pd
 
             matrix = [self.index]
@@ -690,7 +690,7 @@ class Solver(object):
 
         print('----- Analysis -----')
         import pandas as pd
-        logf = r'/share/home/202220143416/project/SimAD/PatchAD/logs'
+        logf = r'./logs'
 
         datas = {
             'total_W_r':total_W_r.item(),
