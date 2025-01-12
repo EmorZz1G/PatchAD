@@ -27,7 +27,7 @@ class Logger(object):
     def flush(self):
         pass
 
-data_pth = r'/share/home/202220143416/time_series_data/dc_detector/'
+data_pth = r'./dc_detector/'
 
 args = argparse.ArgumentParser()
 args.add_argument("--data_name", required=False, default='MSL', type=str)
@@ -150,8 +150,4 @@ if __name__ == "__main__":
     print("Result path", res_pth)
     
     main(params)
-    
-
-
-
-    
+ 

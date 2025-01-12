@@ -169,3 +169,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project-specific cruft
+patch_ad_model2/
+patch_ad_result2/
+logs/
+
