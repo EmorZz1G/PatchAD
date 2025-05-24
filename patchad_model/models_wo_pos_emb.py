@@ -364,7 +364,7 @@ class PatchMLPAD(nn.Module):
         # Mutil-scale Patching Operation
         for patch_index, patchsize in enumerate(self.patch_sizes):
             patch_enc = self.patch_encoders[patch_index]
-            x = x + self.win_emb(x)
+            # x = x + self.win_emb(x)
             # x = self.win_emb(x)
             x_patch_num = x_patch_size = x
             # B L C

@@ -129,14 +129,14 @@ class PatchMLP_layer(nn.Module):
         x_patch_num = self.norm2(x_patch_num)
         x_patch_num = self.patch_num_mix(x_patch_num)
         x_patch_num = self.norm2(x_patch_num)
-        x_patch_num = self.d_mixing1(x_patch_num)
+        # x_patch_num = self.d_mixing1(x_patch_num)
 
         x_patch_size = self.norm1(x_patch_size)
         x_patch_size = self.ch_mixing1(x_patch_size)
         x_patch_size = self.norm2(x_patch_size)
         x_patch_size = self.patch_size_mix(x_patch_size)
         x_patch_size = self.norm2(x_patch_size)
-        x_patch_size = self.d_mixing1(x_patch_size)
+        # x_patch_size = self.d_mixing1(x_patch_size)
 
         return x_patch_num, x_patch_size
 

@@ -33,7 +33,7 @@ args = argparse.ArgumentParser()
 args.add_argument("--data_name", required=False, default='MSL', type=str)
 args.add_argument("--data_path", required=False, default=data_pth, type=str)
 
-args.add_argument("--device", required=False, default='cuda:0', type=str)
+args.add_argument("--device", required=False, default='cuda', type=str)
 args.add_argument("--ver", required=False, default='', type=str)
 args.add_argument("--win_size", "-ws", required=False, default=105, type=int)
 args.add_argument("--stride", "-st", required=False, default=1, type=int)

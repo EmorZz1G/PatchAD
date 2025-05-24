@@ -106,7 +106,7 @@ class PatchMLP_layer(nn.Module):
         super().__init__()
         # B C N P
         self.ch_mixing1 = MLPBlock(1, in_chn, hid_chn, out_chn, activ, drop, jump_conn=jump_conn)
-        # self.ch_mixing2 = MLPBlock(1, in_chn, hid_chn, out_chn, activ, drop, jump_conn=jump_conn)
+        self.ch_mixing2 = MLPBlock(1, in_chn, hid_chn, out_chn, activ, drop, jump_conn=jump_conn)
         self.patch_num_mix = MLPBlock(2, in_len // patch_size, hid_len, in_len // patch_size, activ, drop, jump_conn=jump_conn)
         self.patch_size_mix = MLPBlock(2, patch_size, hid_pch, patch_size, activ, drop,jump_conn=jump_conn)
         self.d_mixing1 = MLPBlock(3, d_model, d_model, d_model, activ, drop, jump_conn=jump_conn)
@@ -132,7 +132,7 @@ class PatchMLP_layer(nn.Module):
         x_patch_num = self.d_mixing1(x_patch_num)
 
         x_patch_size = self.norm1(x_patch_size)
-        x_patch_size = self.ch_mixing1(x_patch_size)
+        x_patch_size = self.ch_mixing2(x_patch_size)
         x_patch_size = self.norm2(x_patch_size)
         x_patch_size = self.patch_size_mix(x_patch_size)
         x_patch_size = self.norm2(x_patch_size)

@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from tkinter import _flatten
 
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, precision_recall_curve
 from sklearn.metrics import accuracy_score
 
 def my_best_f1(score, label):
@@ -75,8 +75,12 @@ def anomaly_score(patch_num_dist_list,patch_size_dist_list, win_size, train=1, t
         patch_size_dist = patch_size_dist_list[i]
 
 
-        patch_num_dist = repeat(patch_num_dist,'b n d -> b (n rp) d',rp=win_size//patch_num_dist.shape[1])
-        patch_size_dist = repeat(patch_size_dist,'b p d -> b (rp p) d',rp=win_size//patch_size_dist.shape[1])
+
+        # patch_num_dist = repeat(patch_num_dist,'b n d -> b (n rp) d',rp=win_size//patch_num_dist.shape[1])
+        # patch_size_dist = repeat(patch_size_dist,'b p d -> b (rp p) d',rp=win_size//patch_size_dist.shape[1])
+
+        patch_num_dist = repeat(patch_num_dist,'b n d -> b (rp n) d',rp=win_size//patch_num_dist.shape[1])
+        patch_size_dist = repeat(patch_size_dist,'b p d -> b (p rp) d',rp=win_size//patch_size_dist.shape[1])
 
         patch_num_dist = normalize_tensor(patch_num_dist)
         patch_size_dist = normalize_tensor(patch_size_dist)
@@ -250,7 +254,7 @@ class Solver(object):
 
                 loss_mse = mse_loss(recx, input)
                 # print(loss_mse)
-                loss += loss_mse * 10
+                # loss += loss_mse
 
                 loss.backward()
                 self.optimizer.step()
@@ -407,19 +411,28 @@ class Solver(object):
         
         gt = test_labels.astype(int)
 
-        precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary')
+        # precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary')
+
+        pres,recs,thresholds = precision_recall_curve(gt, test_energy)
+        f1 = 2 * (pres * recs) / (pres + recs)
+        best_thre = thresholds[np.argmax(f1)]
+        precision = pres[np.argmax(f1)]
+        recall = recs[np.argmax(f1)]
+        f_score = f1[np.argmax(f1)]
         print("WOPA Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(precision, recall, f_score))
 
-        res, thrd, pred2 = my_best_f1(test_energy,gt)
 
+        # print("WOPA Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(precision, recall, f_score))
 
+        # res, thrd, pred2 = my_best_f1(test_energy,gt)
+        # pred = (test_energy > best_thre).astype(int)
 
         if self.mode == 'test':
             logf = r'/share/home/202220143416/project/SimAD/PatchAD/logs'
             import pandas as pd
 
             matrix = [self.index]
-            scores_simple = combine_all_evaluation_scores(pred2, gt, test_energy, self.full_res)
+            scores_simple = combine_all_evaluation_scores(pred, gt, test_energy, self.full_res)
             print('===========FULL DATA EVALUATION START===========')
             for key, value in scores_simple.items():
                 matrix.append(value)
