@@ -14,11 +14,10 @@ Anomaly detection in time series analysis is a pivotal task, yet it poses the ch
 
 ![Architecture](./paper_img/fw2.png)
 
-## 📊Overall Performance \& Model Size
+## 📊Overall Performance
 
 <div style="display: flex; flex-wrap: nowrap;">
-  <img src="./paper_img/pfrm.png" alt="Overall Performance" style="max-width: 300px; margin-right: 10px;" width=450px;>
-  <img src="./paper_img/mdlsz.png" alt="Model Size" style="max-width: 150px;" width=200px; >
+  <img src="./paper_img/pfrm.jpg" alt="Overall Performance" style="max-width: 700px; margin-right: 10px;" width=700px;>
 </div>
 
 ## 💾Datasets
