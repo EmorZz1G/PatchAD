@@ -121,6 +121,7 @@ class PatchMLP_layer(nn.Module):
             norm_class = nn.Identity
         self.norm1 = norm_class(in_chn)
         self.norm2 = norm_class(out_chn)
+        self.norm3 = norm_class(d_model)
 
     def forward(self, x_patch_num, x_patch_size):
         # B C N P

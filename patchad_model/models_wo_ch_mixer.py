@@ -121,6 +121,7 @@ class PatchMLP_layer(nn.Module):
             norm_class = nn.Identity
         self.norm1 = norm_class(in_chn)
         self.norm2 = norm_class(out_chn)
+        self.norm3 = norm_class(d_model)
 
     def forward(self, x_patch_num, x_patch_size):
         # B C N P
@@ -128,14 +129,14 @@ class PatchMLP_layer(nn.Module):
         # x_patch_num = self.ch_mixing1(x_patch_num)
         x_patch_num = self.norm2(x_patch_num)
         x_patch_num = self.patch_num_mix(x_patch_num)
-        x_patch_num = self.norm2(x_patch_num)
+        x_patch_num = self.norm3(x_patch_num)
         x_patch_num = self.d_mixing1(x_patch_num)
 
         x_patch_size = self.norm1(x_patch_size)
         # x_patch_size = self.ch_mixing1(x_patch_size)
         x_patch_size = self.norm2(x_patch_size)
         x_patch_size = self.patch_size_mix(x_patch_size)
-        x_patch_size = self.norm2(x_patch_size)
+        x_patch_size = self.norm3(x_patch_size)
         x_patch_size = self.d_mixing1(x_patch_size)
 
         return x_patch_num, x_patch_size

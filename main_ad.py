@@ -49,7 +49,7 @@ args.add_argument("--e_layer", required=False, default=3, type=int)
 args.add_argument("--seed", required=False, default=0, type=int)
 args.add_argument("--save_model", required=False, default=1, type=int)
 args.add_argument("--full_res", required=False, default=1, type=int)
-args.add_argument("--model_save_path", required=False, default=f"/share/home/202220143416//patch_ad_model2/", type=str)
+args.add_argument("--model_save_path", required=False, default=f"/share/home/202220143416/patch_ad_model2/", type=str)
 args.add_argument(
     "--res_pth", required=False, default=f"/share/home/202220143416/patch_ad_result2/", type=str
 )
