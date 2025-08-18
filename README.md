@@ -16,9 +16,7 @@ Anomaly detection in time series analysis is a pivotal task, yet it poses the ch
 
 ## 📊Overall Performance
 
-<div style="display: flex; flex-wrap: nowrap;">
-  <img src="./paper_img/pfrm.jpg" alt="Overall Performance" style="max-width: 700px; margin-right: 10px;" width=700px;>
-</div>
+![Overall Performance](./paper_img/pfrm.jpg)
 
 ## 💾Datasets
 
